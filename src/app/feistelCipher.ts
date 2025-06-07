@@ -7,9 +7,18 @@ export function feistelEncrypt(key: number, plaintext: string): string {
     return "";
   }
 
+  //remove espaços e guarda posições
+  const spacePositions: number[] = [];
+  const textWithoutSpaces = normalizedText.replace(/ /g, (match, offset) => {
+    spacePositions.push(offset);
+    return "";
+  });
+
   //se o bloco tiver comprimento impar adiciona "~" ao final
   const paddedText =
-    normalizedText.length % 2 === 0 ? normalizedText : normalizedText + "~";
+    textWithoutSpaces.length % 2 === 0
+      ? textWithoutSpaces
+      : textWithoutSpaces + "~";
 
   let result = "";
 
@@ -22,7 +31,8 @@ export function feistelEncrypt(key: number, plaintext: string): string {
     result += encryptedBlock;
   }
 
-  return result;
+  //reinsere espaços
+  return insertSpaces(result, spacePositions);
 }
 
 export function feistelDecrypt(key: number, ciphertext: string): string {
@@ -30,17 +40,24 @@ export function feistelDecrypt(key: number, ciphertext: string): string {
     return "";
   }
 
+  //remove espaços e guarda posições
+  const spacePositions: number[] = [];
+  const textWithoutSpaces = ciphertext.replace(/ /g, (match, offset) => {
+    spacePositions.push(offset);
+    return "";
+  });
+
   let result = "";
 
-  for (let i = 0; i < ciphertext.length; i += 2) {
-    const block = ciphertext.substring(i, i + 2);
+  for (let i = 0; i < textWithoutSpaces.length; i += 2) {
+    const block = textWithoutSpaces.substring(i, i + 2);
     //aplica afunção descriptografando
     const decryptedBlock = feistelRound(block, key, false);
     result += decryptedBlock;
   }
 
-  //remove caracter de preenchimento
-  return result.replace(/~+$/, "");
+  //remove caracter de preenchimento e reinsere espaços
+  return insertSpaces(result.replace(/~+$/, ""), spacePositions);
 }
 
 function feistelRound(block: string, key: number, encrypt: boolean): string {
@@ -78,8 +95,17 @@ function feistelRound(block: string, key: number, encrypt: boolean): string {
   const newLeftChar = String.fromCharCode(newLeft + 65);
   const newRightChar = String.fromCharCode(newRight + 65);
 
-  // Retorna o bloco transformado
   return newLeftChar + newRightChar;
+}
+
+function insertSpaces(text: string, positions: number[]): string {
+  const chars = text.split("");
+  positions
+    .sort((a, b) => a - b)
+    .forEach((pos) => {
+      if (pos <= chars.length) chars.splice(pos, 0, " ");
+    });
+  return chars.join("");
 }
 
 export { feistelEncrypt as encrypt, feistelDecrypt as decrypt };
