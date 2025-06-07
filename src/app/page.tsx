@@ -2,7 +2,7 @@
 import { ChangeEvent, FormEvent, useState } from "react";
 import { Lock, Unlock, BarChart3, ClipboardCopy } from "lucide-react";
 import { Inputs } from "./inputsType";
-// import { decrypt, encrypt } from "./caesarCipher";
+import { decrypt, encrypt } from "./feistelCipher";
 import {
   analyzeLetterFrequency,
   type FrequencyAnalysisResult,
@@ -36,21 +36,21 @@ export default function Home() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
-    // try {
-    //   const result = isEncrypting
-    //     ? encrypt(inputs.key, inputs.clearText)
-    //     : decrypt(inputs.key, inputs.clearText);
-    //   setCipherText(result);
+    try {
+      const result = isEncrypting
+        ? encrypt(inputs.key, inputs.clearText)
+        : decrypt(inputs.key, inputs.clearText);
+      setCipherText(result);
 
-    //   const analysis = analyzeLetterFrequency(result);
-    //   setFrequencyData(analysis);
+      const analysis = analyzeLetterFrequency(result);
+      setFrequencyData(analysis);
 
-    //   setInputs(emptyInputs);
-    // } catch (error) {
-    //   console.error("Erro:", error);
-    // } finally {
-    //   setIsProcessing(false);
-    // }
+      setInputs(emptyInputs);
+    } catch (error) {
+      console.error("Erro:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const toggleMode = () => {
@@ -103,7 +103,7 @@ export default function Home() {
                 htmlFor="key"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Chave (1-25)
+                Chave
               </label>
               <input
                 type="number"
